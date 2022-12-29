@@ -293,6 +293,7 @@ void decodeIR(uint32_t code)
                                        // sets bright plain white
     case 7: decodeIR9(code);    break;
     //case 8: return; // ir.json file, handled above switch statement
+    case 9: decodeIR24MC(code); break;
   }
 
   if (nightlightActive && bri == 0) nightlightActive = false;
@@ -703,6 +704,41 @@ void decodeIRJson(uint32_t code)
     }
   }
   releaseJSONBufferLock();
+}
+
+////////////////////////////////////////////////Athom IR_24key_music/////////////////////////
+void decodeIR24MC(uint32_t code)
+{
+  switch (code) {
+    case IR24_MC_OFF        : if (bri > 0) briLast = bri; bri = 0; break;
+    case IR24_MC_AUTO       : changeEffect(FX_MODE_FADE);          break;
+    case IR24_MC_ON         : bri = briLast;                       break;
+    case IR24_MC_MODES      : changeEffect(relativeChange(effectCurrent,  1, 0, 118 -1));               break;
+    case IR24_MC_MODE       : changeEffect(relativeChange(effectCurrent, -1, 0, 118 -1));               break;
+    case IR24_MC_BRIGHTER   : incBrightness();                     break;
+    case IR24_MC_DARKER     : decBrightness();                     break;
+    case IR24_MC_QUICK      : changeEffectSpeed( 16);              break;
+    case IR24_MC_SLOW       : changeEffectSpeed(-16);              break;
+    case IR24_MC_RED        : changeColor(COLOR_RED);              break;
+    case IR24_MC_GREEN      : changeColor(COLOR_GREEN);            break;
+    case IR24_MC_BLUE       : changeColor(COLOR_BLUE);             break;
+    case IR24_MC_R1         : changeColor(COLOR_YELLOW);           break;
+    case IR24_MC_G1         : changeColor(COLOR_DoderBlue);        break;
+    case IR24_MC_B1         : changeColor(COLOR_Indigo);           break;
+    case IR24_MC_R2         : changeColor(COLOR_Magenta);          break;
+    case IR24_MC_G2         : changeColor(COLOR_DarkBlue);         break;
+    case IR24_MC_B2         : changeColor(COLOR_Lime);             break;
+    case IR24_MC_R3         : changeColor(COLOR_Orange);           break;
+    case IR24_MC_G3         : changeColor(COLOR_WHITE);            break;
+    case IR24_MC_B3         : changeEffect(FX_MODE_RAINBOW_CYCLE); break;
+    case IR24_MC_MUSIC1     : changeEffect(relativeChange(effectCurrent,  1, 128, MODE_COUNT -1));       break;
+    case IR24_MC_LOCK       : changeEffect(FX_MODE_STATIC);        break;
+    case IR24_MC_MUSIC2     : changeEffect(relativeChange(effectCurrent, -1, 128, MODE_COUNT -1));       break;
+    default: return;
+  }
+  lastValidCode = code;
+  // Serial.printf_P(PSTR("输出: 0x%lX\n"), (unsigned long)code);
+  // Serial.println("测试24音乐");
 }
 
 void initIR()
